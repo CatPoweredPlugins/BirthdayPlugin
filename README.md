@@ -12,7 +12,7 @@
 
 Add to bot's config file additional parameters:
 
-###`Birthday`
+### `Birthday`
 
 Required parameter of `datetime` type, that tells bot your birthday and time when you prefer to receive message. Should be [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.README.md
 
@@ -23,7 +23,7 @@ Example:
 
 ```
 
-###`BirthdayName`
+### `BirthdayName`
 
 Optional parameter of `string` type, if it's specified - bot will use it as your name when wishing you happy birthday.README.md
 
