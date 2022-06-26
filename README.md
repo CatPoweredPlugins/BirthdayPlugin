@@ -30,3 +30,5 @@ Example:
 ```
 "BirthdayName": "Floofie"
 ```
+
+![downloads](https://img.shields.io/github/downloads/Ryzhehvost/BirthdayPlugin/total.svg?style=social)
