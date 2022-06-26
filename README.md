@@ -20,7 +20,6 @@ Example:
 
 ```
 "Birthday": "2022-01-14T17:05:00Z" 
-
 ```
 
 ### `BirthdayName`
