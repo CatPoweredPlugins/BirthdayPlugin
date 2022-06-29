@@ -138,7 +138,7 @@ jobs:
                 throw "Last command failed."
             }
 
-            if (Test-Path "REAMDE.md") {
+            if (Test-Path "README.md") {
                 pandoc  --metadata title="$env:PLUGIN_NAME" --standalone --columns 2000 -f markdown-implicit_figures -t html --self-contained -c github-pandoc.css -o "out\$variant\$env:PLUGIN_NAME\README.html" README.md
             }
             # By default use fastest compression
