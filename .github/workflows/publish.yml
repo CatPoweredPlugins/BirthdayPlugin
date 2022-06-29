@@ -133,12 +133,14 @@ jobs:
             }
 
             dotnet publish "$env:PLUGIN_NAME" -c "$env:CONFIGURATION" -f "$targetFramework" -o "out\$variant\$env:PLUGIN_NAME" -p:ContinuousIntegrationBuild=true -p:TargetLatestRuntimePatch=false -p:UseAppHost=false --no-restore --nologo
-            pandoc  --metadata title="$env:PLUGIN_NAME" --standalone --columns 2000 -f markdown-implicit_figures -t html --self-contained -c github-pandoc.css -o "out\$variant\$env:PLUGIN_NAME\README.html" README.md
 
             if ($LastExitCode -ne 0) {
                 throw "Last command failed."
             }
 
+            if (Test-Path "REAMDE.md") {
+                pandoc  --metadata title="$env:PLUGIN_NAME" --standalone --columns 2000 -f markdown-implicit_figures -t html --self-contained -c github-pandoc.css -o "out\$variant\$env:PLUGIN_NAME\README.html" README.md
+            }
             # By default use fastest compression
             $compressionArgs = '-mx=1'
 
