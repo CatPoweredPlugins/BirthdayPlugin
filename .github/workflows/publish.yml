@@ -32,6 +32,9 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_SDK_VERSION }}
 
+    - name: Setup Pandoc
+      uses: nikeee/setup-pandoc@v1
+
     - name: Verify .NET Core
       run: dotnet --info
 
@@ -48,7 +51,6 @@ jobs:
 
         publish() {
             dotnet publish "$PLUGIN_NAME" -c "$CONFIGURATION" -f "$NET_CORE_VERSION" -o "out/${1}/${PLUGIN_NAME}" -p:ContinuousIntegrationBuild=true -p:TargetLatestRuntimePatch=false -p:UseAppHost=false --no-restore --nologo
-
 
             # By default use fastest compression
             seven_zip_args="-mx=1"
@@ -132,6 +134,7 @@ jobs:
             }
 
             dotnet publish "$env:PLUGIN_NAME" -c "$env:CONFIGURATION" -f "$targetFramework" -o "out\$variant\$env:PLUGIN_NAME" -p:ContinuousIntegrationBuild=true -p:TargetLatestRuntimePatch=false -p:UseAppHost=false --no-restore --nologo
+            pandoc  --metadata title="$env:PLUGIN_NAME" --standalone --columns 2000 -f markdown -t html --self-contained -c github-pandoc.css -o "out\$variant\$env:PLUGIN_NAME\README.html" README.md
 
             if ($LastExitCode -ne 0) {
                 throw "Last command failed."
@@ -227,10 +230,3 @@ jobs:
         asset_path: out/${{ env.PLUGIN_NAME }}-generic-netf.zip
         asset_name: ${{ env.PLUGIN_NAME }}-generic-netf.zip
         asset_content_type: application/zip
-  converttohtml:
-    name: Build readme
-    runs-on: windows-latest
-    steps:
-        - uses: actions/checkout@master
-        - uses: nikeee/setup-pandoc@v1
-        - run: pandoc  --metadata title="$env:PLUGIN_NAME" --standalone --columns 2000 -f markdown -t html --self-contained -c github-pandoc.css -o out\generic\$env:PLUGIN_NAME\README.html README.md
