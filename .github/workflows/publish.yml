@@ -229,7 +229,7 @@ jobs:
         asset_content_type: application/zip
   converttohtml:
     name: Build readme
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - name: Check if README exists
@@ -242,11 +242,17 @@ jobs:
         if: steps.check_files.outputs.files_exists == 'true'
         with:
           input_path: README.md
-          output_dir: out/${1}/${PLUGIN_NAME}
+          output_dir: out/generic/${{ env.PLUGIN_NAME }}
           #image_import: ./images
           # Default is true, can set to false to only get PDF files
           build_html: true
           build_pdf: false
+      - name: Populate Netf
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+	  Copy-Item "out/generic/${PLUGIN_NAME}" -Destination "out/generic-netf/${PLUGIN_NAME}"
+ 
 #      - uses: actions/upload-artifact@v1
 #        if: steps.check_files.outputs.files_exists == 'true'
 #        with:
