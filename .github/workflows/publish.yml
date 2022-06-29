@@ -233,4 +233,4 @@ jobs:
     steps:
         - uses: actions/checkout@master
         - uses: nikeee/setup-pandoc@v1
-        - run: echo "# Test" | pandoc -t html
+        - run: pandoc  --metadata title="${PLUGIN_NAME}" --standalone --columns 2000 -f markdown -t html --self-contained -c github-pandoc.css -o out\generic\${PLUGIN_NAME}\README.html README.md
