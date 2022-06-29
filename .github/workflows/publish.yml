@@ -13,6 +13,7 @@ env:
 
 jobs:
   publish:
+    needs: converttohtml
     strategy:
       fail-fast: false
       matrix:
@@ -47,6 +48,7 @@ jobs:
 
         publish() {
             dotnet publish "$PLUGIN_NAME" -c "$CONFIGURATION" -f "$NET_CORE_VERSION" -o "out/${1}/${PLUGIN_NAME}" -p:ContinuousIntegrationBuild=true -p:TargetLatestRuntimePatch=false -p:UseAppHost=false --no-restore --nologo
+
 
             # By default use fastest compression
             seven_zip_args="-mx=1"
@@ -225,3 +227,28 @@ jobs:
         asset_path: out/${{ env.PLUGIN_NAME }}-generic-netf.zip
         asset_name: ${{ env.PLUGIN_NAME }}-generic-netf.zip
         asset_content_type: application/zip
+ converttohtml:
+    name: Build readme
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check if README exists
+        id: check_files
+        uses: andstor/file-existence-action@v1
+        with:
+          files: "README.md"
+
+      - uses: baileyjm02/markdown-to-pdf@v1
+        if: steps.check_files.outputs.files_exists == 'true'
+        with:
+          input_path: README.md
+          output_dir: out/${1}/${PLUGIN_NAME}
+          #image_import: ./images
+          # Default is true, can set to false to only get PDF files
+          build_html: true
+          build_pdf: false
+#      - uses: actions/upload-artifact@v1
+#        if: steps.check_files.outputs.files_exists == 'true'
+#        with:
+#          name: docs
+#          path: pdfs
