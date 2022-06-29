@@ -231,30 +231,6 @@ jobs:
     name: Build readme
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Check if README exists
-        id: check_files
-        uses: andstor/file-existence-action@v1
-        with:
-          files: "README.md"
-
-      - uses: baileyjm02/markdown-to-pdf@v1
-        if: steps.check_files.outputs.files_exists == 'true'
-        with:
-          input_path: README.md
-          output_dir: out/generic/${{ env.PLUGIN_NAME }}
-          #image_import: ./images
-          # Default is true, can set to false to only get PDF files
-          build_html: true
-          build_pdf: false
-      - name: Populate Netf
-        shell: pwsh
-        run: |
-          Set-StrictMode -Version Latest
-          Copy-Item "out/generic/${PLUGIN_NAME}" -Destination "out/generic-netf/${PLUGIN_NAME}"
- 
-#      - uses: actions/upload-artifact@v1
-#        if: steps.check_files.outputs.files_exists == 'true'
-#        with:
-#          name: docs
-#          path: pdfs
+        - uses: actions/checkout@master
+        - uses: nikeee/setup-pandoc@v1
+        - run: echo "# Test" | pandoc -t html
