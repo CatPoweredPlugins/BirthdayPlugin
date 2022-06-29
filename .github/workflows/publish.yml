@@ -227,7 +227,7 @@ jobs:
         asset_path: out/${{ env.PLUGIN_NAME }}-generic-netf.zip
         asset_name: ${{ env.PLUGIN_NAME }}-generic-netf.zip
         asset_content_type: application/zip
- converttohtml:
+  converttohtml:
     name: Build readme
     runs-on: ubuntu-latest
     steps:
