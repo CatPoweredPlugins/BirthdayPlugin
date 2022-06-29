@@ -251,7 +251,7 @@ jobs:
         shell: pwsh
         run: |
           Set-StrictMode -Version Latest
-	  Copy-Item "out/generic/${PLUGIN_NAME}" -Destination "out/generic-netf/${PLUGIN_NAME}"
+          Copy-Item "out/generic/${PLUGIN_NAME}" -Destination "out/generic-netf/${PLUGIN_NAME}"
  
 #      - uses: actions/upload-artifact@v1
 #        if: steps.check_files.outputs.files_exists == 'true'
