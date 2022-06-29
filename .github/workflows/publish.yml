@@ -13,7 +13,6 @@ env:
 
 jobs:
   publish:
-    needs: converttohtml
     strategy:
       fail-fast: false
       matrix:
