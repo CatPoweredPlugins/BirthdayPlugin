@@ -23,7 +23,7 @@ Example:
 
 ### `BirthdayName`
 
-Optional parameter of `string` type, if it's specified - bot will use it as your name when wishing you happy birthday.README.md
+Optional parameter of `string` type, if it's specified - bot will use it as your name when wishing you happy birthday.
 
 Example:
 
