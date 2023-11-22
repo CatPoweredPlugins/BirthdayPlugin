@@ -12,7 +12,7 @@ using Newtonsoft.Json.Linq;
 namespace BirthdayPlugin {
 #pragma warning disable CA1812 // ASF uses this class during runtime
 	[UsedImplicitly]
-	internal sealed class BirthdayPlugin : IBotModules, IDisposable {
+	internal class BirthdayPlugin : IBotModules, IDisposable {
 		internal class Birthday {
 			public DateTime Date;
 			public string? Name;
