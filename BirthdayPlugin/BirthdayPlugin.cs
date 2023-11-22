@@ -108,7 +108,7 @@ namespace BirthdayPlugin {
 			CalculateNextEvent();
 		}
 		public Task OnLoaded() {
-			ASF.ArchiLogger.LogGenericInfo($"{Name} by Ryzhehvost, powered by ginger cats");
+			ASF.ArchiLogger.LogGenericInfo($"{Name} by Rudokhvist, powered by ginger cats");
 			BirthdayTimer = new(async e => await Congratulations().ConfigureAwait(false));
 			return Task.CompletedTask;
 		}

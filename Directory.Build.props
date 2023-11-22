@@ -9,7 +9,7 @@
 	<PropertyGroup>
 		<AnalysisMode>AllEnabledByDefault</AnalysisMode>
 		<ApplicationIcon />
-		<Authors>Ryzhehvost</Authors>
+		<Authors>Rudokhvist</Authors>
 		<Company>$(Authors)</Company>
 		<Copyright>Copyright © 2022-$([System.DateTime]::UtcNow.Year) $(Company)</Copyright>
 		<Description>This plugin makes bots wish Happy Birthday to their master</Description>
