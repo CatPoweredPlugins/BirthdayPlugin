@@ -9,7 +9,7 @@ env:
   DOTNET_SDK_VERSION: 7.0.x
   NET_CORE_VERSION: net7.0
   NET_FRAMEWORK_VERSION: net481
-  PLUGIN_NAME: MyAwesomePlugin
+  PLUGIN_NAME: BirthdayPlugin
 
 jobs:
   publish:
