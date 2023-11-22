@@ -2,7 +2,7 @@
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
 	"extends": [
 		"config:base",
-		":assignee(JustArchi)",
+		":assignee(Rudokhvist)",
 		":automergeBranch",
 		":automergeDigest",
 		":automergeMinor",
