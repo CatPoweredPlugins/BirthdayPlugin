@@ -179,13 +179,13 @@ jobs:
         show-progress: false
 
     - name: Download generic artifact from ubuntu-latest
-      uses: actions/download-artifact@v3.0.2
+      uses: actions/download-artifact@v4.0.0
       with:
         name: ubuntu-latest_${{ env.PLUGIN_NAME }}-generic
         path: out
 
     - name: Download generic-netf artifact from windows-latest
-      uses: actions/download-artifact@v3.0.2
+      uses: actions/download-artifact@v4.0.0
       with:
         name: windows-latest_${{ env.PLUGIN_NAME }}-generic-netf
         path: out
