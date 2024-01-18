@@ -13,13 +13,9 @@ namespace BirthdayPlugin {
 #pragma warning disable CA1812 // ASF uses this class during runtime
 	[UsedImplicitly]
 	internal sealed class BirthdayPlugin : IBotModules, IDisposable {
-		internal sealed class Birthday {
-			public DateTime Date;
-			public string? Name;
-			public Birthday(DateTime date, string? name = null) {
-				Date = date;
-				Name = name;
-			}
+		internal sealed class Birthday(DateTime date, string? name = null) {
+			public DateTime Date = date;
+			public string? Name = name;
 		}
 
 		private static readonly ConcurrentDictionary<Bot, Birthday> BotsDB = new();
@@ -113,11 +109,7 @@ namespace BirthdayPlugin {
 			return Task.CompletedTask;
 		}
 
-		public void Dispose() {
-			if (BirthdayTimer != null) {
-				BirthdayTimer.Dispose();
-			}
-		}
+		public void Dispose() => BirthdayTimer?.Dispose();
 	}
 }
 #pragma warning restore CA1812 // ASF uses this class during runtime
