@@ -1,20 +1,21 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ArchiSteamFarm.Core;
 using ArchiSteamFarm.Plugins.Interfaces;
 using ArchiSteamFarm.Steam;
 using JetBrains.Annotations;
-using Newtonsoft.Json.Linq;
 
 namespace BirthdayPlugin {
 #pragma warning disable CA1812 // ASF uses this class during runtime
 	[UsedImplicitly]
 	internal sealed class BirthdayPlugin : IBotModules, IDisposable {
-		internal sealed class Birthday(DateTime date, string? name = null) {
-			public DateTime Date = date;
+		internal sealed class Birthday(DateTimeOffset date, string? name = null) {
+			public DateTimeOffset Date = date;
 			public string? Name = name;
 		}
 
@@ -25,6 +26,7 @@ namespace BirthdayPlugin {
 		public string Name => nameof(BirthdayPlugin);
 		public Version Version => typeof(BirthdayPlugin).Assembly.GetName().Version ?? throw new InvalidOperationException(nameof(Version));
 
+		internal static readonly string[] ISO8601format = ["yyyy-MM-dd'T'HH:mm:ss.FFFK"];
 
 		private static void CalculateNextEvent() {
 			DateTime? nextTime = null;
@@ -46,22 +48,26 @@ namespace BirthdayPlugin {
 			}
 
 		}
-		public Task OnBotInitModules(Bot bot, IReadOnlyDictionary<string, JToken>? additionalConfigProperties = null) {
+		public Task OnBotInitModules(Bot bot, IReadOnlyDictionary<string, JsonElement>? additionalConfigProperties = null) {
 			if (additionalConfigProperties == null) {
 				return Task.CompletedTask;
 			}
 
-			foreach (KeyValuePair<string, JToken> configProperty in additionalConfigProperties) {
+			foreach (KeyValuePair<string, JsonElement> configProperty in additionalConfigProperties) {
 				switch (configProperty.Key.ToUpperInvariant()) {
-					case "BIRTHDAY" when configProperty.Value.Type == JTokenType.Date: {
-						DateTime? birthday = (DateTime?) configProperty.Value;
-						if (birthday != null) {
-							_ = BotsDB.TryAdd(bot, new Birthday((DateTime) birthday));
+					case "BIRTHDAY" when configProperty.Value.ValueKind == JsonValueKind.String: {
+
+						if (DateTimeOffset.TryParseExact(configProperty.Value.ToString(),
+													 ISO8601format,
+													 CultureInfo.InvariantCulture,
+													 DateTimeStyles.None,
+													 out DateTimeOffset birthday)) {
+							_ = BotsDB.TryAdd(bot, new Birthday(birthday));
 						}
 						break;
 					}
 
-					case "BIRTHDAYNAME" when configProperty.Value.Type == JTokenType.String: {
+					case "BIRTHDAYNAME" when configProperty.Value.ValueKind == JsonValueKind.String: {
 						if (configProperty.Value.ToString() != null) {
 							if (BotsDB.TryGetValue(bot, out Birthday? birthday)) {
 								Birthday newBirthday = new(birthday.Date, configProperty.Value.ToString());
