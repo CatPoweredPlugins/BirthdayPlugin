@@ -31,7 +31,7 @@ jobs:
       uses: mavrosxristoforos/get-xml-info@2.0
       with:
         xml-file: 'Directory.Build.props'
-        xpath: '//Authors'
+        xpath: '//PluginName'
 
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v4.0.0
