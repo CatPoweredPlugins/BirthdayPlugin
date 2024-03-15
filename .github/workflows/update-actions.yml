@@ -47,6 +47,7 @@ jobs:
         git_commit_gpgsign: true
 
     - name: Update workflows if needed
+      id: update
       shell: sh
       run: |
         set -eu
@@ -65,9 +66,16 @@ jobs:
             git config --local user.name "GitHub Action"
         fi
 
-        git commit -m "Automatic workflows update from ASF-PluginTemplate"
+        if [[ `git status --porcelain` ]]; then
+          git commit -m "Automatic workflows update from ASF-PluginTemplate"
+          echo "new_commits=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "new_commits=false" >> "$GITHUB_OUTPUT"
+        fi
+
 
     - name: Push changes to the repo
+      if: ${{ steps.update.outputs.new_commits == 'true'}}
       uses: ad-m/github-push-action@v0.8.0
       with:
         directory: plugin
