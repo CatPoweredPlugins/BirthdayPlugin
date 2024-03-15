@@ -56,8 +56,6 @@ jobs:
 
         cd plugin
 
-        git add -A
-
         if ! git config --get user.email > /dev/null; then
             git config --local user.email "action@github.com"
         fi
@@ -66,7 +64,8 @@ jobs:
             git config --local user.name "GitHub Action"
         fi
 
-        if git status --porcelain ; then
+        if [ $(git status --porcelain | wc -c) -ne 0 ]; then
+          git add -A
           git commit -m "Automatic workflows update from ASF-PluginTemplate"
           echo "new_commits=true" >> "$GITHUB_OUTPUT"
         else
