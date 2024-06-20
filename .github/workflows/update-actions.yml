@@ -12,7 +12,6 @@ on:
 env:
   # You can specify your own credentials if you'd like to, simply change ARCHIBOT_GPG_PRIVATE_KEY and/or ARCHIBOT_GITHUB_TOKEN secrets here to the ones you want to use
   GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }} # Optional, if secret not provided, will skip signing commit with GPG key
-  PUSH_GITHUB_TOKEN: ${{ secrets.WORKFLOW_TOKEN }} # Optional, if secret not provided, will use the default token
 
 permissions:
   contents: write
@@ -28,7 +27,6 @@ jobs:
       with:
         show-progress: false
         path: plugin
-        token: ${{ env.PUSH_GITHUB_TOKEN }}
 
     - name: Checkout template
       uses: actions/checkout@v4.1.7
@@ -36,7 +34,6 @@ jobs:
         show-progress: false
         repository: JustArchiNET/ASF-PluginTemplate
         path: template
-        token: ${{ env.PUSH_GITHUB_TOKEN }}
 
     - name: Import GPG key for signing
       uses: crazy-max/ghaction-import-gpg@v6.1.0
@@ -54,7 +51,14 @@ jobs:
 
         cp -rf template/.github/workflows/*.* plugin/.github/workflows/
 
+        cd template
+        commit=$(git rev-parse HEAD)
+        echo "branch="$commit >> "$GITHUB_OUTPUT"
+        echo "master="$(git rev-parse --abbrev-ref HEAD) >> "$GITHUB_OUTPUT"
+        echo "repo="$(basename -s .git `git config --get remote.origin.url`)
+
         cd plugin
+        git checkout -b $commit
 
         if ! git config --get user.email > /dev/null; then
             git config --local user.email "action@github.com"
@@ -72,11 +76,21 @@ jobs:
           echo "new_commits=false" >> "$GITHUB_OUTPUT"
         fi
 
-
     - name: Push changes to the repo
       if: ${{ steps.update.outputs.new_commits == 'true'}}
       uses: ad-m/github-push-action@v0.8.0
       with:
         directory: plugin
         github_token: ${{ env.PUSH_GITHUB_TOKEN }}
-        branch: ${{ github.ref }}
+        branch:  ${{ steps.update.outputs.branch }}
+#        branch: ${{ github.ref }}
+
+    - name: Open PR
+      id: open_pr
+      uses: rematocorp/open-pull-request-action@v1
+      with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          from-branch: ${{ steps.update.outputs.branch }}
+          to-branch: ${{ steps.update.outputs.branch }}
+          repository-owner: ${{github.repository_owner}}
+          repository: ${{ steps.update.outputs.repo }}
