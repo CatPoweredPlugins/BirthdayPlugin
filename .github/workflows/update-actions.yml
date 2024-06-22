@@ -77,6 +77,7 @@ jobs:
         fi
 
     - name: Push changes to the repo
+      id: push_changes
       if: ${{ steps.update.outputs.new_commits == 'true'}}
       uses: ad-m/github-push-action@v0.8.0
       with:
@@ -86,6 +87,7 @@ jobs:
 #        branch: ${{ github.ref }}
 
     - name: Open PR
+      if: ${{ steps.update.outputs.new_commits == 'true'}}
       id: open_pr
       uses: rematocorp/open-pull-request-action@v1
       with:
