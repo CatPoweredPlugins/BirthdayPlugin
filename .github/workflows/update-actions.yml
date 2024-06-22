@@ -82,7 +82,8 @@ jobs:
       uses: ad-m/github-push-action@v0.8.0
       with:
         directory: plugin
-        github_token: ${{ env.PUSH_GITHUB_TOKEN }}
+#        github_token: ${{ env.PUSH_GITHUB_TOKEN }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
         branch:  ${{ steps.update.outputs.branch }}
 #        branch: ${{ github.ref }}
 
