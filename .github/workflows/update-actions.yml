@@ -12,7 +12,7 @@ on:
 env:
   # You can specify your own credentials if you'd like to, simply change ARCHIBOT_GPG_PRIVATE_KEY and/or ARCHIBOT_GITHUB_TOKEN secrets here to the ones you want to use
   GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }} # Optional, if secret not provided, will skip signing commit with GPG key
-
+  PUSH_GITHUB_TOKEN: ${{ secrets.WORKFLOW_TOKEN }} # Permission `workflows` is needed to push workflows to repo
 permissions:
   contents: write
   actions: write
@@ -82,8 +82,7 @@ jobs:
       uses: ad-m/github-push-action@v0.8.0
       with:
         directory: plugin
-#        github_token: ${{ env.PUSH_GITHUB_TOKEN }}
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ env.PUSH_GITHUB_TOKEN }}
         branch:  ${{ steps.update.outputs.branch }}
 #        branch: ${{ github.ref }}
 
@@ -94,6 +93,6 @@ jobs:
       with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           from-branch: ${{ steps.update.outputs.branch }}
-          to-branch: ${{ steps.update.outputs.branch }}
+          to-branch: ${{ steps.update.outputs.master }}
           repository-owner: ${{github.repository_owner}}
           repository: ${{ steps.update.outputs.repo }}
