@@ -55,7 +55,7 @@ jobs:
         commit=$(git rev-parse HEAD)
         echo "branch="$commit >> "$GITHUB_OUTPUT"
 
-        cd plugin
+        cd ../plugin
         echo "master="$(git rev-parse --abbrev-ref HEAD) >> "$GITHUB_OUTPUT"
         echo "repo="$(basename -s .git `git config --get remote.origin.url`)
         git checkout -b $commit
