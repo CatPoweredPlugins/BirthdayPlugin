@@ -54,10 +54,10 @@ jobs:
         cd template
         commit=$(git rev-parse HEAD)
         echo "branch="$commit >> "$GITHUB_OUTPUT"
-        echo "master="$(git rev-parse --abbrev-ref HEAD) >> "$GITHUB_OUTPUT"
-        echo "repo="$(basename -s .git `git config --get remote.origin.url`)
 
         cd plugin
+        echo "master="$(git rev-parse --abbrev-ref HEAD) >> "$GITHUB_OUTPUT"
+        echo "repo="$(basename -s .git `git config --get remote.origin.url`)
         git checkout -b $commit
 
         if ! git config --get user.email > /dev/null; then
