@@ -52,7 +52,7 @@ jobs:
         cp -rf template/.github/workflows/*.* plugin/.github/workflows/
 
         cd template
-        commit=$(git rev-parse HEAD)
+        commit=$(git rev-parse HEAD | cut -c 1-7)
         echo "branch="$commit >> "$GITHUB_OUTPUT"
 
         cd ../plugin
