@@ -3,7 +3,7 @@
 
 	<PropertyGroup>
 		<PluginName>BirthdayPlugin</PluginName>
-		<Version>0.0.1.0</Version>
+		<Version>1.0.0.0</Version>
 	</PropertyGroup>
 
 	<PropertyGroup>

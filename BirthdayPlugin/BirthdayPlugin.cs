@@ -1,19 +1,23 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ArchiSteamFarm.Core;
 using ArchiSteamFarm.Plugins.Interfaces;
 using ArchiSteamFarm.Steam;
+using ArchiSteamFarm.Web.GitHub.Data;
 using JetBrains.Annotations;
 
 namespace BirthdayPlugin {
 #pragma warning disable CA1812 // ASF uses this class during runtime
 	[UsedImplicitly]
-	internal sealed class BirthdayPlugin : IBotModules, IDisposable {
+	internal sealed class BirthdayPlugin : IBotModules, IDisposable, IGitHubPluginUpdates {
 		internal sealed class Birthday(DateTimeOffset date, string? name = null) {
 			public DateTimeOffset Date = date;
 			public string? Name = name;
@@ -25,6 +29,31 @@ namespace BirthdayPlugin {
 
 		public string Name => nameof(BirthdayPlugin);
 		public Version Version => typeof(BirthdayPlugin).Assembly.GetName().Version ?? throw new InvalidOperationException(nameof(Version));
+
+		public string RepositoryName => "Rudokhvist/BirthdayPlugin";
+
+		public Task<ReleaseAsset?> GetTargetReleaseAsset(Version asfVersion, string asfVariant, Version newPluginVersion, IReadOnlyCollection<ReleaseAsset> releaseAssets) {
+			ArgumentNullException.ThrowIfNull(asfVersion);
+			ArgumentException.ThrowIfNullOrEmpty(asfVariant);
+			ArgumentNullException.ThrowIfNull(newPluginVersion);
+
+			if ((releaseAssets == null) || (releaseAssets.Count == 0)) {
+				throw new ArgumentNullException(nameof(releaseAssets));
+			}
+
+			Collection<ReleaseAsset?> matches = [.. releaseAssets.Where(r => r.Name.Equals(Name + ".zip", StringComparison.OrdinalIgnoreCase))];
+
+			if (matches.Count != 1) {
+				return Task.FromResult((ReleaseAsset?) null);
+			}
+
+			ReleaseAsset? release = matches[0];
+
+			return (Version.Major == newPluginVersion.Major && Version.Minor == newPluginVersion.Minor && Version.Build == newPluginVersion.Build) || asfVersion != Assembly.GetExecutingAssembly().GetName().Version
+				? Task.FromResult(release)
+				: Task.FromResult((ReleaseAsset?) null);
+		}
+
 
 		internal static readonly string[] ISO8601format = ["yyyy-MM-dd'T'HH:mm:ss.FFFK"];
 
