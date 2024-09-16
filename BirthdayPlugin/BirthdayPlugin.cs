@@ -1,20 +1,20 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Linq;
-using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ArchiSteamFarm.Core;
+using ArchiSteamFarm.Localization;
 using ArchiSteamFarm.Plugins.Interfaces;
 using ArchiSteamFarm.Steam;
+using ArchiSteamFarm.Web.GitHub;
 using ArchiSteamFarm.Web.GitHub.Data;
 using JetBrains.Annotations;
 
 namespace BirthdayPlugin {
+#pragma warning disable CA1863 // Use 'CompositeFormat'
 #pragma warning disable CA1812 // ASF uses this class during runtime
 	[UsedImplicitly]
 	internal sealed class BirthdayPlugin : IBotModules, IDisposable, IGitHubPluginUpdates {
@@ -32,54 +32,55 @@ namespace BirthdayPlugin {
 
 		public string RepositoryName => "CatPoweredPlugins/BirthdayPlugin";
 
-	public async Task<Uri?> GetTargetReleaseURL(Version asfVersion, string asfVariant, bool asfUpdate, bool stable, bool forced) {
-		ArgumentNullException.ThrowIfNull(asfVersion);
-		ArgumentException.ThrowIfNullOrEmpty(asfVariant);
+		public async Task<Uri?> GetTargetReleaseURL(Version asfVersion, string asfVariant, bool asfUpdate, bool stable, bool forced) {
+			ArgumentNullException.ThrowIfNull(asfVersion);
+			ArgumentException.ThrowIfNullOrEmpty(asfVariant);
 
-		if (string.IsNullOrEmpty(RepositoryName)) {
-			ASF.ArchiLogger.LogGenericError(string.Format(CultureInfo.CurrentCulture, Strings.WarningFailedWithError, (nameof(RepositoryName))));
+			if (string.IsNullOrEmpty(RepositoryName)) {
 
-			return null;
+				ASF.ArchiLogger.LogGenericError(string.Format(CultureInfo.CurrentCulture, Strings.WarningFailedWithError, nameof(RepositoryName)));
+
+				return null;
+			}
+
+			ReleaseResponse? releaseResponse = await GitHubService.GetLatestRelease(RepositoryName, stable).ConfigureAwait(false);
+
+			if (releaseResponse == null) {
+				return null;
+			}
+
+			Version newVersion = new(releaseResponse.Tag);
+
+			if (!(Version.Major == newVersion.Major && Version.Minor == newVersion.Minor && Version.Build == newVersion.Build) && !(asfUpdate || forced)) {
+				ASF.ArchiLogger.LogGenericInfo(string.Format(CultureInfo.CurrentCulture, "New {0} plugin version {1} is only compatible with latest ASF version", Name, newVersion));
+				return null;
+			}
+
+
+			if (Version >= newVersion & !forced) {
+				ASF.ArchiLogger.LogGenericInfo(string.Format(CultureInfo.CurrentCulture, Strings.PluginUpdateNotFound, Name, Version, newVersion));
+
+				return null;
+			}
+
+			if (releaseResponse.Assets.Count == 0) {
+				ASF.ArchiLogger.LogGenericWarning(string.Format(CultureInfo.CurrentCulture, Strings.PluginUpdateNoAssetFound, Name, Version, newVersion));
+
+				return null;
+			}
+
+			ReleaseAsset? asset = await ((IGitHubPluginUpdates) this).GetTargetReleaseAsset(asfVersion, asfVariant, newVersion, releaseResponse.Assets).ConfigureAwait(false);
+
+			if ((asset == null) || !releaseResponse.Assets.Contains(asset)) {
+				ASF.ArchiLogger.LogGenericWarning(string.Format(CultureInfo.CurrentCulture, Strings.PluginUpdateNoAssetFound, Name, Version, newVersion));
+
+				return null;
+			}
+
+			ASF.ArchiLogger.LogGenericInfo(string.Format(CultureInfo.CurrentCulture, Strings.PluginUpdateFound, Name, Version, newVersion));
+
+			return asset.DownloadURL;
 		}
-
-		ReleaseResponse? releaseResponse = await GitHubService.GetLatestRelease(RepositoryName, stable).ConfigureAwait(false);
-
-		if (releaseResponse == null) {
-			return null;
-		}
-
-		Version newVersion = new(releaseResponse.Tag);
-
-		if (!(Version.Major == newVersion.Major && Version.Minor == newVersion.Minor && Version.Build == newVersion.Build) && !(asfUpdate || forced)) {
-			ASF.ArchiLogger.LogGenericInfo(string.Format(CultureInfo.CurrentCulture, "New {0} plugin version {1} is only compatible with latest ASF version", Name, newVersion));
-			return null;
-		}
-
-
-		if (Version >= newVersion & !forced) {
-			ASF.ArchiLogger.LogGenericInfo(string.Format(CultureInfo.CurrentCulture, Strings.PluginUpdateNotFound, Name, Version, newVersion));
-
-			return null;
-		}
-
-		if (releaseResponse.Assets.Count == 0) {
-			ASF.ArchiLogger.LogGenericWarning(string.Format(CultureInfo.CurrentCulture, Strings.PluginUpdateNoAssetFound, Name, Version, newVersion));
-
-			return null;
-		}
-
-		ReleaseAsset? asset = await ((IGitHubPluginUpdates) this).GetTargetReleaseAsset(asfVersion, asfVariant, newVersion, releaseResponse.Assets).ConfigureAwait(false);
-
-		if ((asset == null) || !releaseResponse.Assets.Contains(asset)) {
-			ASF.ArchiLogger.LogGenericWarning(string.Format(CultureInfo.CurrentCulture, Strings.PluginUpdateNoAssetFound, Name, Version, newVersion));
-
-			return null;
-		}
-
-		ASF.ArchiLogger.LogGenericInfo(string.Format(CultureInfo.CurrentCulture, Strings.PluginUpdateFound, Name, Version, newVersion));
-
-		return asset.DownloadURL;
-	}
 
 
 		internal static readonly string[] ISO8601format = ["yyyy-MM-dd'T'HH:mm:ss.FFFK"];
@@ -175,3 +176,4 @@ namespace BirthdayPlugin {
 	}
 }
 #pragma warning restore CA1812 // ASF uses this class during runtime
+#pragma warning restore CA1863 // Use 'CompositeFormat'
