@@ -30,29 +30,56 @@ namespace BirthdayPlugin {
 		public string Name => nameof(BirthdayPlugin);
 		public Version Version => typeof(BirthdayPlugin).Assembly.GetName().Version ?? throw new InvalidOperationException(nameof(Version));
 
-		public string RepositoryName => "Rudokhvist/BirthdayPlugin";
+		public string RepositoryName => "CatPoweredPlugins/BirthdayPlugin";
 
-		public Task<ReleaseAsset?> GetTargetReleaseAsset(Version asfVersion, string asfVariant, Version newPluginVersion, IReadOnlyCollection<ReleaseAsset> releaseAssets) {
-			ArgumentNullException.ThrowIfNull(asfVersion);
-			ArgumentException.ThrowIfNullOrEmpty(asfVariant);
-			ArgumentNullException.ThrowIfNull(newPluginVersion);
+	public async Task<Uri?> GetTargetReleaseURL(Version asfVersion, string asfVariant, bool asfUpdate, bool stable, bool forced) {
+		ArgumentNullException.ThrowIfNull(asfVersion);
+		ArgumentException.ThrowIfNullOrEmpty(asfVariant);
 
-			if ((releaseAssets == null) || (releaseAssets.Count == 0)) {
-				throw new ArgumentNullException(nameof(releaseAssets));
-			}
+		if (string.IsNullOrEmpty(RepositoryName)) {
+			ASF.ArchiLogger.LogGenericError(string.Format(CultureInfo.CurrentCulture, Strings.WarningFailedWithError, (nameof(RepositoryName))));
 
-			Collection<ReleaseAsset?> matches = [.. releaseAssets.Where(r => r.Name.Equals(Name + ".zip", StringComparison.OrdinalIgnoreCase))];
-
-			if (matches.Count != 1) {
-				return Task.FromResult((ReleaseAsset?) null);
-			}
-
-			ReleaseAsset? release = matches[0];
-
-			return (Version.Major == newPluginVersion.Major && Version.Minor == newPluginVersion.Minor && Version.Build == newPluginVersion.Build) || asfVersion != Assembly.GetExecutingAssembly().GetName().Version
-				? Task.FromResult(release)
-				: Task.FromResult((ReleaseAsset?) null);
+			return null;
 		}
+
+		ReleaseResponse? releaseResponse = await GitHubService.GetLatestRelease(RepositoryName, stable).ConfigureAwait(false);
+
+		if (releaseResponse == null) {
+			return null;
+		}
+
+		Version newVersion = new(releaseResponse.Tag);
+
+		if (!(Version.Major == newVersion.Major && Version.Minor == newVersion.Minor && Version.Build == newVersion.Build) && !(asfUpdate || forced)) {
+			ASF.ArchiLogger.LogGenericInfo(string.Format(CultureInfo.CurrentCulture, "New {0} plugin version {1} is only compatible with latest ASF version", Name, newVersion));
+			return null;
+		}
+
+
+		if (Version >= newVersion & !forced) {
+			ASF.ArchiLogger.LogGenericInfo(string.Format(CultureInfo.CurrentCulture, Strings.PluginUpdateNotFound, Name, Version, newVersion));
+
+			return null;
+		}
+
+		if (releaseResponse.Assets.Count == 0) {
+			ASF.ArchiLogger.LogGenericWarning(string.Format(CultureInfo.CurrentCulture, Strings.PluginUpdateNoAssetFound, Name, Version, newVersion));
+
+			return null;
+		}
+
+		ReleaseAsset? asset = await ((IGitHubPluginUpdates) this).GetTargetReleaseAsset(asfVersion, asfVariant, newVersion, releaseResponse.Assets).ConfigureAwait(false);
+
+		if ((asset == null) || !releaseResponse.Assets.Contains(asset)) {
+			ASF.ArchiLogger.LogGenericWarning(string.Format(CultureInfo.CurrentCulture, Strings.PluginUpdateNoAssetFound, Name, Version, newVersion));
+
+			return null;
+		}
+
+		ASF.ArchiLogger.LogGenericInfo(string.Format(CultureInfo.CurrentCulture, Strings.PluginUpdateFound, Name, Version, newVersion));
+
+		return asset.DownloadURL;
+	}
 
 
 		internal static readonly string[] ISO8601format = ["yyyy-MM-dd'T'HH:mm:ss.FFFK"];
